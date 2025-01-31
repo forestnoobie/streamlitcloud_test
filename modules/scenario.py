@@ -174,13 +174,12 @@ prompt_templates = {
 
 
 class main_bot():
-    def __init__(self, cred_path, load_option, date="", custom_url=""):
+    def __init__(self, load_option, date="", custom_url=""):
         print("Initialized!")
         self.load_option = load_option
-        credential = yaml.safe_load(Path(cred_path).read_text())
         #self.credential = credential
         self.credential = st.secrets
-        self.key = credential['chatgpt']['api_key']
+        self.key = self.credential['chatgpt']['api_key']
         self.client = OpenAI(api_key=self.key)
         self.custom_url=custom_url
 
@@ -521,9 +520,8 @@ class main_bot():
 
 # Parsing bot
 class parse_bot():
-    def __init__(self, cred_path, save_date='', save_path="../data/news_df_") :
-        credential = yaml.safe_load(Path(cred_path).read_text())
-        self.credential = credential
+    def __init__(self, save_date='', save_path="../data/news_df_") :
+        self.credential = st.secrets
         self.key = credential['chatgpt']['api_key']
         self.fpath = save_path
         self.isexist_flag = False
@@ -601,7 +599,6 @@ class parse_bot():
             
 
 if __name__ == "__main__":
-    cred_path = '../credential.yaml'
-    bot = main_bot(cred_path)
+    bot = main_bot()
     #bot = parse_bot(cred_path)
     bot.run()

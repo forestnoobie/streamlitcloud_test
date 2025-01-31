@@ -36,18 +36,15 @@ if st.toggle("실행") :
 
 if st.session_state['run'] :
     try : 
-        cred_path = './credential.yaml'
         load_option = True
         date =  (datetime.now() + timedelta(days=1)).strftime('%Y%m%d')
         print("Initialized")
-        bot = main_bot(cred_path, load_option, date)
+        bot = main_bot(load_option, date)
         bot.run()
     except :
-        cred_path = './credential.yaml'
         load_option = False
         date =  (datetime.now() + timedelta(days=1)).strftime('%Y%m%d')
-        print("Initialized")
-        bot = main_bot(cred_path, load_option, date)
+        bot = main_bot(load_option, date)
         bot.run()
     
     
