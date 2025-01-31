@@ -1,10 +1,9 @@
-from streamlit_option_menu import option_menu
 import streamlit as st
-import re
 
 from modules.scenario import main_bot
 
 from datetime import datetime, timedelta
+import re
 
 
 st.set_page_config(page_title="디지털 데일리", page_icon=":robot:",
