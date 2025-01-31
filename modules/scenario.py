@@ -177,7 +177,6 @@ class main_bot():
     def __init__(self, load_option, date="", custom_url=""):
         print("Initialized!")
         self.load_option = load_option
-        #self.credential = credential
         self.credential = st.secrets
         self.key = self.credential['chatgpt']['api_key']
         self.client = OpenAI(api_key=self.key)
