@@ -508,7 +508,7 @@ class main_bot():
             f.write(response)
         self.news_df.to_csv("news_df_{}".format(datetime.today().strftime('%Y%m%d')),index=False)
 
-        expander = st.expander(label = "Advanced tools 🛠️")
+        expander = st.expander(label = "Advanced tools 🛠️ / 기사 추가로 확인")
         with expander :
             cols= st.columns((1,1))
             cols[0].download_button("전체 기사 다운로드", response, file_name="전체기사.txt")
