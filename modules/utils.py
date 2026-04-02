@@ -186,13 +186,17 @@ def get_study_format(articles, credential):
     random.seed(1)
     dd_output = ''
     # To Do random -> rule
-    article = random.choice(articles)
-    dd_output += """○ {}
-출처 : {}
-- {}
-""".format(article['title'],
-article['publisher'] , get_shorturl(article['url'], credential))   
-    print(dd_output)
+    if articles :
+        article = random.choice(articles)
+        dd_output += """○ {}
+    출처 : {}
+    - {}
+    """.format(article['title'],
+    article['publisher'] , get_shorturl(article['url'], credential))   
+        print(dd_output)
+    else :
+        dd_output += """○ 오늘은 Digital 스터디를 가져오지 못했습니다.
+    """
     return dd_output  
 
 # jinga
