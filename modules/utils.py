@@ -57,8 +57,7 @@ def get_crawl_result(url):
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()), options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
     driver.get(url)
     while True:
@@ -167,18 +166,27 @@ def get_study(publisher="byline"):
     # URL of the website
     articles = []
     if publisher == "byline":
-        url = "https://byline.network/post_curation/main-top/page/1/"
-        
-        response = requests.get(url)
+        url = "https://byline.network/post_curation/main-top/"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, 'html.parser')
-        
-        soup_all =  soup.find_all('div', class_='entry-content-wrap')
+
+        soup_all = soup.find_all('div', class_='entry-content-wrap')
         for article in soup_all:
-            title_tag = article.find_all('a')[1].text.strip()
-            link_tag = article.find_all('a')[1].get('href').strip()
-            time_tag = article.time.get('datetime')
-            articles.append({'title': title_tag, 'time': time_tag, 
-            'url': link_tag, "publisher" : "바이라인네트워크"})
+            title_elem = article.find('h2', class_='entry-title')
+            if not title_elem:
+                continue
+            title_a = title_elem.find('a')
+            if not title_a:
+                continue
+            title_tag = title_a.text.strip()
+            link_tag = title_a.get('href').strip()
+            time_elem = article.find('time', class_='entry-date')
+            time_tag = time_elem.get('datetime') if time_elem else ""
+            articles.append({'title': title_tag, 'time': time_tag,
+            'url': link_tag, "publisher": "바이라인네트워크"})
     return articles
 
 
