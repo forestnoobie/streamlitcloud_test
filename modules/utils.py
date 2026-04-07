@@ -67,14 +67,17 @@ def get_crawl_result(url):
     deadline = time.time() + 180  # 3분 제한
     while time.time() < deadline:
         try:
-            # "기사 더보기" 버튼 찾기
             more_button = driver.find_element(By.XPATH, '//*[@id="newsct"]/div[2]/div/div[2]/a')
             more_button.click()
-            time.sleep(0.1)  # 페이지 로드 대기
+            time.sleep(0.1)
         except:
-            break
-    
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
+            break  # 더보기 버튼 없으면 종료
+
+    # 타임아웃이든 버튼 소진이든 그 시점까지 로드된 페이지 반환
+    try:
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+    finally:
+        driver.quit()
     return soup
     
 # Get URL
