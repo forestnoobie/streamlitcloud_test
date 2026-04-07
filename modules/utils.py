@@ -57,7 +57,11 @@ def get_crawl_result(url):
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    import sys
+    if sys.platform.startswith('linux') and os.path.exists('/usr/bin/chromedriver'):
+        driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=options)
+    else:
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
     driver.get(url)
     while True:
