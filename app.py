@@ -1,7 +1,7 @@
 import base64
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from modules.scenario import main_bot
 
@@ -103,15 +103,6 @@ def render_card(record: dict):
 
 # ── Sidebar ───────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## ⚙️ 설정")
-
-    selected_date = st.date_input(
-        "날짜 선택",
-        value=(datetime.now() + timedelta(days=1)).date(),
-        help="분석할 뉴스 날짜를 선택하세요",
-    )
-
-    st.divider()
     st.markdown("## 🔍 필터")
 
     min_importance = st.select_slider(
@@ -168,7 +159,8 @@ if run_btn:
         with open("./urls.txt", "w") as f:
             f.write(custom_urls_text.strip())
 
-    date_str = selected_date.strftime("%Y%m%d")
+    kst = timezone(timedelta(hours=9))
+    date_str = (datetime.now(kst) + timedelta(days=1)).strftime("%Y%m%d")
 
     try:
         bot = main_bot(True, date=date_str, custom_url=use_custom_url)
@@ -273,4 +265,4 @@ if st.session_state["results"]:
         st.code(results["response_all"])
 
 else:
-    st.info("사이드바에서 날짜를 선택하고 **🚀 실행** 버튼을 눌러주세요.")
+    st.info("사이드바에서 **🚀 실행** 버튼을 눌러주세요.")
