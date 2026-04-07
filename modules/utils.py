@@ -65,11 +65,16 @@ def get_crawl_result(url):
     
     driver.get(url)
     deadline = time.time() + 180  # 3분 제한
+    prev_count = 0
     while time.time() < deadline:
         try:
             more_button = driver.find_element(By.XPATH, '//*[@id="newsct"]/div[2]/div/div[2]/a')
+            cur_count = len(driver.find_elements(By.CSS_SELECTOR, 'a.sa_thumb_link'))
+            if cur_count == prev_count or cur_count > 200:
+                break  # 클릭해도 새 기사가 없거나 100개 초과 시 종료
+            prev_count = cur_count
             more_button.click()
-            time.sleep(0.1)
+            time.sleep(0.5)
         except:
             break  # 더보기 버튼 없으면 종료
 
