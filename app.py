@@ -1,3 +1,4 @@
+import base64
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
@@ -52,6 +53,16 @@ def sentiment_meta(score: int):
         return "#ff7f0e", "중립"
     else:
         return "#d62728", "부정"
+
+
+def download_link(content: str, filename: str, label: str) -> str:
+    b64 = base64.b64encode(content.encode("utf-8")).decode()
+    return (
+        f'<a href="data:text/plain;charset=utf-8;base64,{b64}" download="{filename}" '
+        f'style="display:inline-block;padding:8px 16px;background:#ff4b4b;color:white;'
+        f'border-radius:6px;text-decoration:none;font-size:14px;font-weight:500;">'
+        f'{label}</a>'
+    )
 
 
 def importance_border(imp: int):
@@ -209,20 +220,13 @@ if st.session_state["results"]:
 
     st.divider()
 
-    # Download buttons
+    # Download buttons (HTML anchor — no rerun on click)
     date_label = results["date"].strftime("%Y%m%d")
-    d1, d2, _, _ = st.columns(4)
-    d1.download_button(
-        "📥 뉴스레터 다운로드",
-        results["response"],
-        file_name=f"디지털데일리_{date_label}.txt",
-        use_container_width=True,
-    )
-    d2.download_button(
-        "📥 전체 기사 다운로드",
-        results["response_all"],
-        file_name=f"전체기사_{date_label}.txt",
-        use_container_width=True,
+    st.markdown(
+        download_link(results["response"], f"디지털데일리_{date_label}.txt", "📥 뉴스레터 다운로드")
+        + "&nbsp;&nbsp;"
+        + download_link(results["response_all"], f"전체기사_{date_label}.txt", "📥 전체 기사 다운로드"),
+        unsafe_allow_html=True,
     )
 
     st.divider()
