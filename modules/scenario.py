@@ -485,9 +485,7 @@ class main_bot():
         print(response)
         with open("./data/result.txt", "a") as f:
             f.write(response)
-        with st.chat_message("assistant"):
-            st.code(response)
-
+        self._response = response
         return response
     def digitaldaily_format_all(self):
         # temp for recording
@@ -506,15 +504,8 @@ class main_bot():
         response = get_jinga(status, trend, study, target_date=self.target_date)
         with open("./data/result_all.txt", "w") as f:
             f.write(response)
-        self.news_df.to_csv("news_df_{}".format(datetime.today().strftime('%Y%m%d')),index=False)
-
-        expander = st.expander(label = "Advanced tools 🛠️ / 기사 추가로 확인")
-        with expander :
-            cols= st.columns((1,1))
-            cols[0].download_button("전체 기사 다운로드", response, file_name="전체기사.txt")
-            cols[1].button("새로고침")
-            
-
+        self.news_df.to_csv("news_df_{}".format(datetime.today().strftime('%Y%m%d')), index=False)
+        self._response_all = response
         return response
 
 # Parsing bot
