@@ -64,15 +64,14 @@ def get_crawl_result(url):
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
     driver.get(url)
-    while True:
+    deadline = time.time() + 180  # 3분 제한
+    while time.time() < deadline:
         try:
             # "기사 더보기" 버튼 찾기
-            more_button = driver.find_element(By.XPATH, '//*[@id="newsct"]/div[2]/div/div[2]/a')  # 버튼의 클래스가 btn_more
-            more_button.click()  # 더보기 버튼 클
-            #print("Clicked")
+            more_button = driver.find_element(By.XPATH, '//*[@id="newsct"]/div[2]/div/div[2]/a')
+            more_button.click()
             time.sleep(0.1)  # 페이지 로드 대기
         except:
-            #print("더 이상 '기사 더보기' 버튼이 없습니다.")
             break
     
     soup = BeautifulSoup(driver.page_source, 'html.parser')
