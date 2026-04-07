@@ -21,7 +21,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from modules.utils import (
     get_naverlinks, fetch_article_details, get_jinga,
-    get_study, get_study_format, get_output_format,
+    get_study, get_study_format, get_study_format_all, get_output_format,
     get_shorturl, check_date
 )
 
@@ -468,6 +468,7 @@ class main_bot():
     def get_study(self):
         articles = get_study()
         self.study = get_study_format(articles, self.credential)
+        self.study_all = get_study_format_all(articles, self.credential)
 
 
     def digitaldaily_format(self):
@@ -493,11 +494,11 @@ class main_bot():
             if key not in self.news_df.columns:
                 self.news_df[key] = 'temp'
 
-        status = get_output_format(self.news_df, 
+        status = get_output_format(self.news_df,
                                    status="금융회사", max_num=-1)
-        trend = get_output_format(self.news_df, 
+        trend = get_output_format(self.news_df,
                                   status="정부정책 및 동향", max_num=-1)
-        study = self.study
+        study = self.study_all
 
         ####### To Do
         # Save

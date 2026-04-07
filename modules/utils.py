@@ -197,27 +197,44 @@ def get_study(publisher="byline"):
 def get_study_format(articles, credential):
     random.seed(1)
     dd_output = ''
-    # To Do random -> rule
-    if articles :
+    if articles:
         article = random.choice(articles)
         dd_output += """○ {}
     출처 : {}
     - {}
     """.format(article['title'],
-    article['publisher'] , get_shorturl(article['url'], credential))   
+    article['publisher'], get_shorturl(article['url'], credential))
         print(dd_output)
-    else :
+    else:
         dd_output += """○ 오늘은 Digital 스터디를 가져오지 못했습니다.
     """
-    return dd_output  
+    return dd_output
+
+
+def get_study_format_all(articles, credential):
+    dd_output = ''
+    if articles:
+        for article in articles:
+            dd_output += """○ {}
+    출처 : {}
+    - {}
+    """.format(article['title'],
+    article['publisher'], get_shorturl(article['url'], credential))
+    else:
+        dd_output += """○ 오늘은 Digital 스터디를 가져오지 못했습니다.
+    """
+    return dd_output
 
 # jinga
 
 def get_output_format(df, status="", max_num=3):
     dd_output = ''
-    if status: 
+    if status:
         df = df[df['class']==status]
-    for record in df.to_dict('records')[:max_num]:
+    records = df.to_dict('records')
+    if max_num > 0:
+        records = records[:max_num]
+    for record in records:
         dd_output += """○ {} {} 
 출처 : {}
  - {}

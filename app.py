@@ -232,12 +232,21 @@ if st.session_state["results"]:
     st.divider()
 
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab0, tab1, tab2, tab3, tab4 = st.tabs([
+        "📨 뉴스레터",
         "🏦 금융회사",
         "📋 정부정책 및 동향",
         "📚 Digital 스터디",
         "📄 전체 원문",
     ])
+
+    with tab0:
+        st.markdown("### 공유용 뉴스레터")
+        st.markdown(
+            "<p style='color:#888;font-size:13px;'>아래 내용이 공유될 뉴스레터입니다. 상단 📥 뉴스레터 다운로드로 저장하세요.</p>",
+            unsafe_allow_html=True,
+        )
+        st.code(results["response"], language="")
 
     with tab1:
         fin_df = fdf[fdf["class"] == "금융회사"] if "class" in fdf.columns else pd.DataFrame()
