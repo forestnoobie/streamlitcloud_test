@@ -1,9 +1,21 @@
 import base64
+import os
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 
 from modules.scenario import main_bot
+
+APP_VERSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")
+
+
+def get_version() -> str:
+    try:
+        with open(APP_VERSION_FILE) as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return "unknown"
+
 
 st.set_page_config(
     page_title="디지털 데일리",
@@ -129,6 +141,11 @@ with st.sidebar:
     st.divider()
     run_btn   = st.button("🚀 실행", use_container_width=True, type="primary")
     clear_btn = st.button("🗑️ 결과 초기화", use_container_width=True)
+
+    st.markdown(
+        f"<p style='color:#aaa;font-size:12px;margin-top:16px;'>버전 v{get_version()}</p>",
+        unsafe_allow_html=True,
+    )
 
 
 # ── Session state init ────────────────────────────────────────────
