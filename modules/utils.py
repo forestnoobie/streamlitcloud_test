@@ -242,13 +242,13 @@ def get_output_format(df, status="", max_num=3):
     if max_num > 0:
         records = records[:max_num]
     for record in records:
-        dd_output += """○ {} {} 
+        dd_output += """○ {}
 출처 : {}
  - {}
 ▶ {}
-    """.format(record['title'],"★" * int(record['importance']), 
-    record['publisher'] , record['shorturl'], 
-    record['summary']) + "\n\n" 
+    """.format(record['title'],
+    record['publisher'] , record['shorturl'],
+    record['summary']) + "\n\n"
 
     return dd_output   
 
