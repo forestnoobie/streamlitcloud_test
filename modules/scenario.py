@@ -240,6 +240,9 @@ class main_bot():
         else :
             urls = get_naverlinks(url="https://news.naver.com/breakingnews/section/101/259?date={}".format((self.target_date -  timedelta(days=1)).strftime('%Y%m%d')))
         news_list = [fetch_article_details(url) for url in urls]
+        news_list = [n for n in news_list if n is not None]
+        if not news_list:
+            raise RuntimeError(f"기사 수집 실패: {len(urls)}개 URL 모두 응답을 받지 못했습니다.")
         news_df = pd.DataFrame(news_list)
         # Remove no contents articles
         news_df = news_df[news_df['content'].apply(lambda x : len(x) != 0)]
@@ -556,6 +559,9 @@ class parse_bot():
     def collect(self):
         urls = get_naverlinks(url="https://news.naver.com/breakingnews/section/101/259?date={}".format(self.save_date))
         news_list = [fetch_article_details(url) for url in urls]
+        news_list = [n for n in news_list if n is not None]
+        if not news_list:
+            raise RuntimeError(f"기사 수집 실패: {len(urls)}개 URL 모두 응답을 받지 못했습니다.")
         news_df = pd.DataFrame(news_list)
         TF = news_df.content.map(lambda x : True if any(keyword in x for keyword in self.collect_keywords) else False)
         news_df = news_df[TF]
