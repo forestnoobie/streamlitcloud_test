@@ -29,6 +29,36 @@ from bs4 import BeautifulSoup
 # credential = yaml.safe_load(Path('../credential.yaml').read_text())
 
 
+def post_to_notion(content, credential):
+    token = credential['notion']['token']
+    page_id = credential['notion']['page_id']
+
+    # Notion rich_text items are capped at 2000 chars each; split to stay under that.
+    chunks = [content[i:i + 2000] for i in range(0, len(content), 2000)]
+    rich_text = [{"type": "text", "text": {"content": chunk}} for chunk in chunks]
+
+    response = requests.patch(
+        f"https://api.notion.com/v1/blocks/{page_id}/children",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Notion-Version": "2022-06-28",
+            "Content-Type": "application/json",
+        },
+        json={
+            "children": [{
+                "object": "block",
+                "type": "code",
+                "code": {
+                    "rich_text": rich_text,
+                    "language": "plain text",
+                },
+            }]
+        },
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def get_shorturl(original_url, credential):
     # client_id = credential['naver_short_url']['client_id']
     # client_secret = credential['naver_short_url']['client_secret']

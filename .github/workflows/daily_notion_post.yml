@@ -1,0 +1,28 @@
+name: Daily digest to Notion
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 17:00 KST
+  workflow_dispatch: {}
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: pip install -r requirements.txt
+
+      - name: Write secrets
+        env:
+          STREAMLIT_SECRETS_TOML: ${{ secrets.STREAMLIT_SECRETS_TOML }}
+        run: |
+          mkdir -p .streamlit
+          printf '%s' "$STREAMLIT_SECRETS_TOML" > .streamlit/secrets.toml
+
+      - name: Run daily digest and post to Notion
+        run: python scripts/post_daily_digest.py
