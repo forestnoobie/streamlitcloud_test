@@ -14,7 +14,8 @@ def main():
 
     bot = main_bot(False, date=date_str)
     bot.run()
-    post_to_notion(bot._response, bot.credential)
+    post_to_notion(bot._response, bot.credential, heading="📨 공유용 뉴스레터")
+    post_to_notion(bot._response_all, bot.credential, heading="📄 전체 수집 기사 요약")
 
 
 if __name__ == "__main__":

@@ -29,13 +29,31 @@ from bs4 import BeautifulSoup
 # credential = yaml.safe_load(Path('../credential.yaml').read_text())
 
 
-def post_to_notion(content, credential):
+def post_to_notion(content, credential, heading=None):
     token = credential['notion']['token']
     page_id = credential['notion']['page_id']
 
     # Notion rich_text items are capped at 2000 chars each; split to stay under that.
     chunks = [content[i:i + 2000] for i in range(0, len(content), 2000)]
     rich_text = [{"type": "text", "text": {"content": chunk}} for chunk in chunks]
+
+    children = []
+    if heading:
+        children.append({
+            "object": "block",
+            "type": "heading_2",
+            "heading_2": {
+                "rich_text": [{"type": "text", "text": {"content": heading}}],
+            },
+        })
+    children.append({
+        "object": "block",
+        "type": "code",
+        "code": {
+            "rich_text": rich_text,
+            "language": "plain text",
+        },
+    })
 
     response = requests.patch(
         f"https://api.notion.com/v1/blocks/{page_id}/children",
@@ -44,16 +62,7 @@ def post_to_notion(content, credential):
             "Notion-Version": "2022-06-28",
             "Content-Type": "application/json",
         },
-        json={
-            "children": [{
-                "object": "block",
-                "type": "code",
-                "code": {
-                    "rich_text": rich_text,
-                    "language": "plain text",
-                },
-            }]
-        },
+        json={"children": children},
     )
     response.raise_for_status()
     return response.json()
