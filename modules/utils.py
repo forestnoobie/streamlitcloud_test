@@ -29,7 +29,32 @@ from bs4 import BeautifulSoup
 # credential = yaml.safe_load(Path('../credential.yaml').read_text())
 
 
-def post_to_notion(content, credential, heading=None):
+def get_notion_top_insert_anchor(credential):
+    """Find the block ID to insert after so new posts land above previous daily
+    posts but below any fixed header content (e.g. bookmarks/notes) that precedes them."""
+    token = credential['notion']['token']
+    page_id = credential['notion']['page_id']
+
+    response = requests.get(
+        f"https://api.notion.com/v1/blocks/{page_id}/children",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Notion-Version": "2022-06-28",
+        },
+        params={"page_size": 100},
+    )
+    response.raise_for_status()
+    results = response.json()["results"]
+
+    prev_id = None
+    for block in results:
+        if block["type"] in ("code", "heading_2"):
+            return prev_id
+        prev_id = block["id"]
+    return prev_id
+
+
+def post_to_notion(content, credential, heading=None, after=None):
     token = credential['notion']['token']
     page_id = credential['notion']['page_id']
 
@@ -55,6 +80,10 @@ def post_to_notion(content, credential, heading=None):
         },
     })
 
+    body = {"children": children}
+    if after:
+        body["after"] = after
+
     response = requests.patch(
         f"https://api.notion.com/v1/blocks/{page_id}/children",
         headers={
@@ -62,7 +91,7 @@ def post_to_notion(content, credential, heading=None):
             "Notion-Version": "2022-06-28",
             "Content-Type": "application/json",
         },
-        json={"children": children},
+        json=body,
     )
     response.raise_for_status()
     return response.json()
