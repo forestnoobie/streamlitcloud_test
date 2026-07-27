@@ -2,7 +2,7 @@ name: Daily digest to Notion
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 17:00 KST
+    - cron: '0 7 * * *'  # 16:00 KST
   workflow_dispatch: {}
 
 jobs:
