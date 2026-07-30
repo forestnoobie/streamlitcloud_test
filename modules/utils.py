@@ -241,10 +241,13 @@ def weeknum_to_weekday(weeknum):
 
 # Crawling study website
 
-def get_study(publisher="byline"):
-    # URL of the website
+def get_study(publisher="all"):
+    # "all" collects from every known study source; pass a specific
+    # source name ("byline", "yozm") to fetch just that one.
+    sources = ["byline", "yozm"] if publisher == "all" else [publisher]
     articles = []
-    if publisher == "byline":
+
+    if "byline" in sources:
         url = "https://byline.network/post_curation/main-top/"
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -266,6 +269,25 @@ def get_study(publisher="byline"):
             time_tag = time_elem.get('datetime') if time_elem else ""
             articles.append({'title': title_tag, 'time': time_tag,
             'url': link_tag, "publisher": "바이라인네트워크"})
+
+    if "yozm" in sources:
+        # The AI category page renders its article list client-side via JS,
+        # so we read the equivalent RSS feed instead of scraping the HTML.
+        url = "https://yozm.wishket.com/magazine/ai/feed/"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        for item in soup.find_all('item'):
+            title_elem = item.find('title')
+            link_elem = item.find('guid')
+            if not title_elem or not link_elem:
+                continue
+            articles.append({'title': title_elem.text.strip(), 'time': "",
+            'url': link_elem.text.strip(), "publisher": "요즘IT"})
+
     return articles
 
 
