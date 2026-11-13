@@ -6,6 +6,7 @@ import re
 import requests
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -239,7 +240,7 @@ class main_bot():
             urls = lines
         else :
             urls = get_naverlinks(url="https://news.naver.com/breakingnews/section/101/259?date={}".format((self.target_date -  timedelta(days=1)).strftime('%Y%m%d')))
-        news_list = [fetch_article_details(url) for url in urls]
+        news_list = self._parallel_map(fetch_article_details, urls)
         news_list = [n for n in news_list if n is not None]
         if not news_list:
             raise RuntimeError(f"기사 수집 실패: {len(urls)}개 URL 모두 응답을 받지 못했습니다.")
@@ -264,6 +265,10 @@ class main_bot():
         # 빠른 중복제거를 위한 TFIDF
         self.news_df = self.quick_remove_duplicate(self.news_df)
     
+    def _parallel_map(self, func, items, max_workers=8):
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            return list(executor.map(func, items))
+
     def quick_calculate_similarity(self, article1, article2):
         vectorizer = TfidfVectorizer()
         tfidf_matrix = vectorizer.fit_transform([article1, article2])
@@ -282,14 +287,12 @@ class main_bot():
         
     def check_digital(self):
         news_df = self.news_df
-        
-        system_prompt = prompt_templates["system"] 
+
+        system_prompt = prompt_templates["system"]
         environment = jinja2.Environment()
         jinja_template = environment.from_string(prompt_templates["digital"])
 
-        digital_yn = []
-
-        for content in news_df['content'] :
+        def classify(content):
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -298,12 +301,12 @@ class main_bot():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}]
             )
-            try : 
-                digital_yn.append((eval(response.choices[0].message.content)["디지털"]))
+            try :
+                return eval(response.choices[0].message.content)["디지털"]
             except :
-                digital_yn.append(-1)
-                pass
-            
+                return -1
+
+        digital_yn = self._parallel_map(classify, news_df['content'])
         print("Check digital")
         
         news_df['digital_yn'] = digital_yn
@@ -319,9 +322,7 @@ class main_bot():
         environment = jinja2.Environment()
         jinja_template = environment.from_string(prompt_templates["sentiment"])
 
-        scores = []
-
-        for content in  news_df['content'] :
+        def classify(content):
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -330,11 +331,12 @@ class main_bot():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}]
             )
-            try : 
-                scores.append((eval(response.choices[0].message.content)["긍정도"]))
+            try :
+                return eval(response.choices[0].message.content)["긍정도"]
             except :
-                scores.append(-1)
-                pass
+                return -1
+
+        scores = self._parallel_map(classify, news_df['content'])
         print("Sentiment test")
         return scores
 
@@ -345,9 +347,7 @@ class main_bot():
         environment = jinja2.Environment()
         jinja_template = environment.from_string(prompt_templates["importance"])
 
-        scores = []
-
-        for title in  news_df['title'] :
+        def classify(title):
             prompt = jinja_template.render(content=title)
             response = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -356,11 +356,12 @@ class main_bot():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}]
             )
-            try : 
-                scores.append((eval(response.choices[0].message.content)["중요도"]))
+            try :
+                return eval(response.choices[0].message.content)["중요도"]
             except :
-                scores.append(1)
-                pass
+                return 1
+
+        scores = self._parallel_map(classify, news_df['title'])
         self.news_df['importance'] = scores
 
         # Importance가 2인데 신한 들어가 있으면 3점으로 바꾸는 로직
@@ -387,9 +388,7 @@ class main_bot():
         environment = jinja2.Environment()
         jinja_template = environment.from_string(prompt_templates["status"])
 
-        scores = []
-
-        for content in  news_df['title'] :
+        def classify(content):
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -398,11 +397,12 @@ class main_bot():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}]
             )
-            try : 
-                scores.append((eval(response.choices[0].message.content)["구분"]))
+            try :
+                return eval(response.choices[0].message.content)["구분"]
             except :
-                scores.append("null")
-                pass
+                return "null"
+
+        scores = self._parallel_map(classify, news_df['title'])
         print("status test")
         return scores
     
@@ -449,10 +449,8 @@ class main_bot():
         environment = jinja2.Environment()
         jinja_template = environment.from_string(prompt_templates["summary"])
 
-        summary = []
-
-        for i in range(len(news_df)) :
-            prompt = jinja_template.render(content = news_df.loc[i, 'content'])
+        def summarize(content):
+            prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 response_format={"type": "json_object"},
@@ -460,13 +458,12 @@ class main_bot():
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}]
             )
-            try : 
-                summary.append((eval(response.choices[0].message.content)["요약문"]))
+            try :
+                return eval(response.choices[0].message.content)["요약문"]
             except :
-                summary.append("null")
-                pass
-                
-        return summary
+                return "null"
+
+        return self._parallel_map(summarize, news_df['content'])
     
     def get_study(self):
         articles = get_study()
