@@ -292,7 +292,7 @@ class main_bot():
         for content in news_df['content'] :
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo-0125",
+            model="gpt-4o-mini",
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -324,7 +324,7 @@ class main_bot():
         for content in  news_df['content'] :
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo-0125",
+            model="gpt-4o-mini",
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -350,7 +350,7 @@ class main_bot():
         for title in  news_df['title'] :
             prompt = jinja_template.render(content=title)
             response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo-0125",
+            model="gpt-4o-mini",
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -392,7 +392,7 @@ class main_bot():
         for content in  news_df['title'] :
             prompt = jinja_template.render(content=content)
             response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo-0125",
+            model="gpt-4o-mini",
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -454,7 +454,7 @@ class main_bot():
         for i in range(len(news_df)) :
             prompt = jinja_template.render(content = news_df.loc[i, 'content'])
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
+                model="gpt-4o-mini",
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": system_prompt},
