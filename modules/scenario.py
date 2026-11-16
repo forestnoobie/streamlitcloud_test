@@ -249,7 +249,7 @@ class main_bot():
         news_df = news_df[news_df['content'].apply(lambda x : len(x) != 0)]
         news_df = news_df.reset_index(drop=True)
         news_df = self.quick_remove_duplicate(news_df)
-        news_df["shorturl"] = self._parallel_map(lambda x : get_shorturl(x, self.credential), news_df["url"])
+        news_df["shorturl"] = news_df["url"].map(lambda x : get_shorturl(x,self.credential))
         return news_df 
     
     def load(self):

@@ -98,20 +98,27 @@ def post_to_notion(content, credential, heading=None, after=None):
 
 
 def get_shorturl(original_url, credential):
-    try:
-        response = requests.get(
-            "https://tinyurl.com/api-create.php",
-            params={"url": original_url},
-            timeout=10,
-        )
-        short_url = response.text.strip()
-        if response.status_code == 200 and short_url.startswith("https://tinyurl.com/"):
-            return short_url
-        print(f"Short URL 생성 실패 ({response.status_code}): {original_url}")
-    except requests.exceptions.RequestException as e:
-        print(f"Short URL 생성 실패: {original_url} ({e})")
-    return original_url
+    # client_id = credential['naver_short_url']['client_id']
+    # client_secret = credential['naver_short_url']['client_secret']
+    # encText = urllib.parse.quote(original_url)
+    # data = "url=" + encText
+    # url = "https://openapi.naver.com/v1/util/shorturl"
+    # request = urllib.request.Request(url)
+    # request.add_header("X-Naver-Client-Id",client_id)
+    # request.add_header("X-Naver-Client-Secret",client_secret)
+    # response = urllib.request.urlopen(request, data=data.encode("utf-8"))
+    # rescode = response.getcode()
+    # if(rescode==200):
+    #     response_body = response.read()
+    # else:
+    #     print("Error Code:" + rescode)
 
+    # response_dict = eval(response_body.decode('utf-8'))
+    #return response_dict['result']['url']
+
+    # temp
+    return original_url
+    
 # Crawling
 def get_crawl_result(url):
     options = Options()
