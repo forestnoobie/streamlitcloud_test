@@ -23,7 +23,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from modules.utils import (
     get_naverlinks, fetch_article_details, get_jinga,
     get_study, get_study_format, get_study_format_all, get_output_format,
-    get_shorturl, check_date
+    get_shorturl, get_naver_share_urls, check_date
 )
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -471,11 +471,22 @@ class main_bot():
         self.study_all = get_study_format_all(articles, self.credential)
 
 
+    def add_share_urls(self, max_num=3):
+        if "shorturl" not in self.news_df.columns:
+            self.news_df["shorturl"] = self.news_df["url"]
+        selected = pd.concat([
+            self.news_df[self.news_df["class"] == status].head(max_num)
+            for status in ["금융회사", "정부정책 및 동향"]
+        ])
+        share_urls = get_naver_share_urls(list(selected["url"]))
+        self.news_df.loc[selected.index, "shorturl"] = selected["url"].map(share_urls)
+
     def digitaldaily_format(self):
         # Key value check
         for key in ["publisher", "url"] :
             if key not in self.news_df.columns:
                 self.news_df[key] = 'temp'
+        self.add_share_urls(max_num=3)
 
         status = get_output_format(self.news_df, status="금융회사")
         trend = get_output_format(self.news_df, status="정부정책 및 동향")

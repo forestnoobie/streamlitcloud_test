@@ -18,6 +18,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 
@@ -119,18 +120,60 @@ def get_shorturl(original_url, credential):
     # temp
     return original_url
     
-# Crawling
-def get_crawl_result(url):
+def get_chrome_driver(user_agent=None):
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    if user_agent:
+        options.add_argument(f'--user-agent={user_agent}')
     import sys
     if sys.platform.startswith('linux') and os.path.exists('/usr/bin/chromedriver'):
-        driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=options)
-    else:
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    
+        return webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=options)
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+
+MOBILE_USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+
+
+def get_naver_share_urls(urls):
+    """Returns {url: naver.me short url}; urls that fail map to themselves."""
+    result = {url: url for url in urls}
+    if not urls:
+        return result
+
+    def read_short(d):
+        for el in d.find_elements(By.CSS_SELECTOR, "._spi_copyurl_txt"):
+            text = (el.get_attribute("innerText") or "").strip()
+            if "naver.me" in text:
+                return text
+        return False
+
+    try:
+        driver = get_chrome_driver(user_agent=MOBILE_USER_AGENT)
+    except Exception as e:
+        print(f"Short URL용 브라우저 실행 실패: {e}")
+        return result
+    try:
+        for url in urls:
+            for attempt in range(2):
+                try:
+                    driver.get(url)
+                    button = WebDriverWait(driver, 10).until(lambda d: d.find_element(By.ID, "spiButton"))
+                    driver.execute_script("arguments[0].click();", button)
+                    result[url] = WebDriverWait(driver, 10).until(read_short)
+                    break
+                except Exception as e:
+                    print(f"Short URL 생성 실패 ({attempt + 1}/2): {url} ({type(e).__name__})")
+    finally:
+        driver.quit()
+    return result
+
+
+# Crawling
+def get_crawl_result(url):
+    driver = get_chrome_driver()
+
     driver.get(url)
     deadline = time.time() + 180  # 3분 제한
     prev_count = 0
