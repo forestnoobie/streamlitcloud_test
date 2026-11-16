@@ -184,8 +184,12 @@ def fetch_article_details(article_url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
-    response = requests.get(article_url, headers=headers)
-    
+    try:
+        response = requests.get(article_url, headers=headers, timeout=10)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch article details for URL: {article_url} ({e})")
+        return None
+
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         
