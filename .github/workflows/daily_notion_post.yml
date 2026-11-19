@@ -1,8 +1,6 @@
 name: Daily digest to Notion
 
 on:
-  schedule:
-    - cron: '17 4 * * *'  # 13:17 KST trigger; off-beat minute + early buffer to offset GitHub's scheduling delay, targeting ~16:00 KST actual run
   workflow_dispatch: {}
 
 jobs:
